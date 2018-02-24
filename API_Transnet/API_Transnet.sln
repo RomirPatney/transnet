@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2010
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API_Transnet", "API_Transnet\API_Transnet.csproj", "{AB327AFE-0A67-46E1-94E8-724DB27FE13D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AB327AFE-0A67-46E1-94E8-724DB27FE13D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB327AFE-0A67-46E1-94E8-724DB27FE13D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB327AFE-0A67-46E1-94E8-724DB27FE13D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB327AFE-0A67-46E1-94E8-724DB27FE13D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {75470CD7-0797-4A79-BE73-1BB46A8C6C0B}
+	EndGlobalSection
+EndGlobal
