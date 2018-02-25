@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:textSize="25dp"
+        android:textStyle="bold"
+        android:layout_marginTop="130dp"
+        android:layout_centerHorizontal="true"
+        android:text="What are you looking for?"
+        android:id="@+id/textbox"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@+id/textbox"
+        android:id="@+id/offerRide"
+        android:layout_margin="20dp"
+        android:text="Offer a ride"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@+id/offerRide"
+        android:id="@+id/requireRide"
+        android:layout_margin="20dp"
+        android:text="Require a ride"/>
+
+</RelativeLayout>

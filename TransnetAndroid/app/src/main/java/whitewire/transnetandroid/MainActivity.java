@@ -5,22 +5,17 @@ import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.content.Intent;
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
 
 import android.content.CursorLoader;
 import android.content.Loader;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.Manifest;
@@ -32,14 +27,11 @@ import android.view.View;
 import android.widget.Button;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
-import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -59,10 +51,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import retrofit2.http.HEAD;
-
 import static android.Manifest.permission.READ_CONTACTS;
-import static android.R.attr.data;
 
 /**
  * A login screen that offers login via email/password.
@@ -200,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
                                             "Please verify your information.",
                                             Toast.LENGTH_LONG).show();
                                 } else {
-                                    startActivity(new Intent(getApplicationContext(), MapsActivity.class));
+                                    startActivity(new Intent(getApplicationContext(), RideSelectionActivity.class));
                                 }
                             }
                         },

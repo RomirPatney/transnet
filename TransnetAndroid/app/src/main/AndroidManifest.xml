@@ -33,13 +33,19 @@
 
         <activity
             android:name=".MapsActivity"
-            android:label="@string/title_activity_maps"
+            android:label="Travel Map"
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name=".GetPictureActivity"
-            android:label="@string/app_name">
-        </activity>
+            android:name=".RideSelectionActivity"
+            android:label="Ride Selection"
+            android:screenOrientation="portrait"/>
+
+        <activity
+            android:name=".OfferRideActivity"
+            android:label="Offer A Ride"
+            android:screenOrientation="portrait"/>
+
         <!--<activity-->
             <!--android:name=".LoginActivity"-->
             <!--android:label="@string/app_name">-->

@@ -1,5 +1,6 @@
 package whitewire.transnetandroid;
 
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.support.v7.app.AppCompatActivity;
@@ -24,7 +25,11 @@ import android.widget.Toast;
 import com.akexorcist.googledirection.DirectionCallback;
 import com.akexorcist.googledirection.GoogleDirection;
 import com.akexorcist.googledirection.model.Direction;
+import com.akexorcist.googledirection.model.Info;
+import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
+import com.akexorcist.googledirection.model.Step;
+import com.akexorcist.googledirection.util.DirectionConverter;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -52,6 +57,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
@@ -212,6 +218,10 @@ public class MapsActivity extends AppCompatActivity
     }
 
     private void getDirections(LatLng origin, LatLng destination) {
+        final TextView durationLabel = (TextView) findViewById(R.id.distanceLabel);
+        final TextView distanceLabel = (TextView) findViewById(R.id.durationLabel);
+        final TextView durationText = (TextView) findViewById(R.id.durationText);
+        final TextView distanceText = (TextView) findViewById(R.id.distanceText);
         String serverKey = "AIzaSyCAWJqAAO0eD4138tt9sEjV-YLoMrH4BzI";
         GoogleDirection.withServerKey(serverKey)
                 .from(origin)
@@ -220,12 +230,29 @@ public class MapsActivity extends AppCompatActivity
                     @Override
                     public void onDirectionSuccess(Direction direction, String rawBody) {
                         Route route = direction.getRouteList().get(0);
+                        Leg leg = route.getLegList().get(0);
+//                        List<Step> stepList= leg.getStepList();
+//                        ArrayList<LatLng> pointList = leg.getDirectionPoint();
+//
+//                        String travelMode = step.getTravelMode();
+//                        ArrayList<LatLng> sectionList = leg.getSectionPoint();
+                        String distance = leg.getDistance().getText();
+                        String duration = leg.getDuration().getText();
+                        durationLabel.setVisibility(View.VISIBLE);
+                        distanceLabel.setVisibility(View.VISIBLE);
+                        durationText.setText(duration);
+                        distanceText.setText(distance);
 
+                        ArrayList<LatLng> directionPositionList = leg.getDirectionPoint();
+                        PolylineOptions polylineOptions = DirectionConverter.createPolyline(getApplicationContext(),
+                                directionPositionList, 5, Color.RED);
+                        mMap.addPolyline(polylineOptions);
                     }
 
                     @Override
                     public void onDirectionFailure(Throwable t) {
-                        // Do something here
+                        Toast.makeText(getApplicationContext(), t.toString(),
+                                Toast.LENGTH_LONG).show();
                     }
                 });
     }
