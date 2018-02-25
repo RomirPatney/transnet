@@ -1,6 +1,8 @@
 package whitewire.transnetandroid;
 
 import android.database.Cursor;
+import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.content.Intent;
 import android.animation.Animator;
@@ -11,7 +13,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.preference.PreferenceManager;
-// import android.support.design.widget.Snackbar;
+import android.support.design.widget.Snackbar;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
@@ -25,6 +27,7 @@ import android.Manifest;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.provider.ContactsContract;
@@ -40,13 +43,26 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.http.HEAD;
 
 import static android.Manifest.permission.READ_CONTACTS;
+import static android.R.attr.data;
 
 /**
  * A login screen that offers login via email/password.
@@ -74,10 +90,13 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
 
     // UI references.
     private AutoCompleteTextView mEmailView;
-    private EditText mPasswordView;
+    private EditText mPasswordView, mCreditView;
     private ImageView mBitmapView;
-    private View mProgressView;
-    private View mLoginFormView;
+
+    ImageView imageView;
+    Bitmap bitmap;
+
+    private String mEmail, mPassword, mCredit, mUrl = null;
 
     protected void checkPreferences() {
         Boolean firstRun = getSharedPreferences("PREFERENCE", MODE_PRIVATE)
@@ -108,6 +127,8 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
 
+        mCreditView = (EditText) findViewById(R.id.credit);
+
         mPasswordView = (EditText) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -120,32 +141,109 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
             }
         });
 
-        // mBitmapView = (ImageView) findViewById(R.id.)
+        final Button registerButton = (Button) findViewById(R.id.register);
+        final Button mSendPictureButton = (Button) findViewById(R.id.send_picture_button);
+        Button btnCamera = (Button) findViewById(R.id.btnCamera);
+        imageView = (ImageView) findViewById(R.id.imageView);
 
-        /*
-        Based on whether the email and password fields exist, decide whether to direct user
-        to login page or
-         */
+        mSendPictureButton.setEnabled(false);
+        registerButton.setEnabled(false);
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
+            }
+        }
+        btnCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(intent, 0);
+                mSendPictureButton.setEnabled(true);
+            }
+        });
+
+        mSendPictureButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptLogin();
+                if (mEmail != null && mPassword != null && mCredit != null) {
+                    registerButton.setEnabled(true);
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    byte[] byteArray = stream.toByteArray();
+                    mUrl = Base64.encodeToString(byteArray, Base64.DEFAULT);
+                } else {
+                    Toast.makeText(getApplicationContext(), "Verify credentials",
+                        Toast.LENGTH_LONG).show();
+                }
             }
         });
 
-        Button mGetPictureButton = (Button) findViewById(R.id.get_picture_button);
-        mGetPictureButton.setOnClickListener(new OnClickListener() {
+        registerButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                getPicture();
+                // Setting up request
+                RequestQueue mRequestQueue = Volley.newRequestQueue(getApplicationContext());
+
+                // Start the queue
+                mRequestQueue.start();
+                String url = "http://api-transnet.azurewebsites.net/api/Values/Register";
+
+                // Formulate the request and handle the response.
+                StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                if (response == "false") {
+                                    Toast.makeText(getApplicationContext(), "Registration unsuccessful.\n" +
+                                            "Please verify your information.",
+                                            Toast.LENGTH_LONG).show();
+                                } else {
+                                    startActivity(new Intent(getApplicationContext(), MapsActivity.class));
+                                }
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Toast.makeText(getApplicationContext(), error.toString(),
+                                        Toast.LENGTH_LONG).show();
+                            }
+                        }) {
+
+                // Sending bounds to the API to return value for given limits
+                @Override
+                protected Map<String, String> getParams() {
+                    Map<String, String> parameters = new HashMap<>();
+                    parameters.put("Email", mEmail);
+                    parameters.put("Password", mPassword);
+                    parameters.put("ImageUrl", mUrl);
+                    parameters.put("payment_no", mCredit);
+                    return parameters;
+                }
+
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError {
+                        Map<String, String> params = new HashMap<>();
+                        return params;
+                    }
+                };
+
+                // Add the request to the RequestQueue.
+                mRequestQueue.add(stringRequest);
             }
         });
-
-        mLoginFormView = findViewById(R.id.login_form);
-        mProgressView = findViewById(R.id.login_progress);
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //Log.d("Data:", data.toString());
+        super.onActivityResult(requestCode, resultCode, data);
+        bitmap = (Bitmap) data.getExtras().get("data");
+        imageView.setImageBitmap(bitmap);
+    }
+
 
     private void populateAutoComplete() {
         if (!mayRequestContacts()) {
@@ -190,15 +288,6 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
         }
     }
 
-
-    /**
-     * Attempts to get the picture of the user during registration.
-     */
-    private void getPicture() {
-        startActivity(new Intent(this, GetPictureActivity.class));
-    }
-
-
     /**
      * Attempts to sign in or register the account specified by the login form.
      * If there are form errors (invalid email, missing fields, etc.), the
@@ -216,6 +305,7 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
         // Store values at the time of the login attempt.
         String email = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
+        String credit = mCreditView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
@@ -246,77 +336,46 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            showProgress(true);
             mAuthTask = new UserLoginTask(email, password);
             mAuthTask.execute((Void) null);
         }
 
-        SharedPreferences.Editor edit = sharedPreferences.edit();
-        edit.putString("email", email);
-        edit.putString("password", password);
+        mEmail = email;
+        mPassword = password;
+        mCredit = credit;
+
+//        SharedPreferences.Editor edit = sharedPreferences.edit();
+//        edit.putString("email", email);
+//        edit.putString("password", password);
     }
 
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
-        return email.contains("@gmail.com");
+        //return email.contains("@gmail.com");
+        return true;
     }
 
     private boolean isPasswordValid(String password) {
         //TODO: Replace this with your own logic
-        return password.length() > 4;
-    }
-
-    /**
-     * Shows the progress UI and hides the login form.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    private void showProgress(final boolean show) {
-        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-        // for very easy animations. If available, use these APIs to fade-in
-        // the progress spinner.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-                }
-            });
-
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mProgressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
-            });
-        } else {
-            // The ViewPropertyAnimator APIs are not available, so simply show
-            // and hide the relevant UI components.
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-        }
+        //return password.length() > 4;
+        return true;
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         return new CursorLoader(this,
-                // Retrieve data rows for the device user's 'profile' contact.
-                Uri.withAppendedPath(ContactsContract.Profile.CONTENT_URI,
-                        ContactsContract.Contacts.Data.CONTENT_DIRECTORY), ProfileQuery.PROJECTION,
+            // Retrieve data rows for the device user's 'profile' contact.
+            Uri.withAppendedPath(ContactsContract.Profile.CONTENT_URI,
+                    ContactsContract.Contacts.Data.CONTENT_DIRECTORY), ProfileQuery.PROJECTION,
 
-                // Select only email addresses.
-                ContactsContract.Contacts.Data.MIMETYPE +
-                        " = ?", new String[]{ContactsContract.CommonDataKinds.Email
-                .CONTENT_ITEM_TYPE},
+            // Select only email addresses.
+            ContactsContract.Contacts.Data.MIMETYPE +
+                    " = ?", new String[]{ContactsContract.CommonDataKinds.Email
+            .CONTENT_ITEM_TYPE},
 
-                // Show primary email addresses first. Note that there won't be
-                // a primary email address if the user hasn't specified one.
-                ContactsContract.Contacts.Data.IS_PRIMARY + " DESC");
+            // Show primary email addresses first. Note that there won't be
+            // a primary email address if the user hasn't specified one.
+            ContactsContract.Contacts.Data.IS_PRIMARY + " DESC");
     }
 
     @Override
@@ -396,7 +455,6 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
         @Override
         protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
-            showProgress(false);
 
             if (success) {
                 finish();
@@ -409,7 +467,6 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
         @Override
         protected void onCancelled() {
             mAuthTask = null;
-            showProgress(false);
         }
     }
 }

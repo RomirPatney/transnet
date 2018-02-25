@@ -21,6 +21,10 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.akexorcist.googledirection.DirectionCallback;
+import com.akexorcist.googledirection.GoogleDirection;
+import com.akexorcist.googledirection.model.Direction;
+import com.akexorcist.googledirection.model.Route;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -61,6 +65,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.R.attr.direction;
 import static android.R.attr.key;
 import static android.R.id.message;
 import static android.support.v7.widget.AppCompatDrawableManager.get;
@@ -164,7 +169,7 @@ public class MapsActivity extends AppCompatActivity
         mapFragment.getMapAsync(this);
     }
 
-    private void getDirections(LatLng origin, LatLng destination) {// Setting up network request
+    private void getDirectionsTwo(LatLng origin, LatLng destination) {// Setting up network request
         RequestQueue mRequestQueue = Volley.newRequestQueue(getApplicationContext());
 
         // Start the queue
@@ -193,14 +198,6 @@ public class MapsActivity extends AppCompatActivity
                                 Toast.LENGTH_LONG).show();
                     }
                 }) {
-            // Sending bounds to the API to return value for given limits
-//            @Override
-//            protected Map<String, String> getParams() {
-//                Map<String, String> parameters = new HashMap<>();
-//                parameters.put("lowerAgeBound", Integer.toString(lowerAgeBound));
-//                parameters.put("upperAgeBound", Integer.toString(upperAgeBound));
-//                return parameters;
-//            }
 
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
@@ -212,6 +209,25 @@ public class MapsActivity extends AppCompatActivity
 
         // Add the request to the RequestQueue.
         mRequestQueue.add(stringRequest);
+    }
+
+    private void getDirections(LatLng origin, LatLng destination) {
+        String serverKey = "AIzaSyCAWJqAAO0eD4138tt9sEjV-YLoMrH4BzI";
+        GoogleDirection.withServerKey(serverKey)
+                .from(origin)
+                .to(destination)
+                .execute(new DirectionCallback() {
+                    @Override
+                    public void onDirectionSuccess(Direction direction, String rawBody) {
+                        Route route = direction.getRouteList().get(0);
+
+                    }
+
+                    @Override
+                    public void onDirectionFailure(Throwable t) {
+                        // Do something here
+                    }
+                });
     }
 
     private void updateMap (String strAddress) {
