@@ -7,6 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
+import com.google.android.gms.wallet.OfferWalletObject;
+
 import static whitewire.transnetandroid.R.id.btnCamera;
 
 /**
@@ -31,7 +33,7 @@ public class RideSelectionActivity extends AppCompatActivity{
         offerRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(getApplicationContext(), RideSelectionActivity.class));
+                startActivity(new Intent(getApplicationContext(), OfferRideActivity.class));
             }
         });
     }

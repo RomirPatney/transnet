@@ -151,7 +151,7 @@ public class OfferRideActivity extends AppCompatActivity {
 
         // Initializing request and defining URL
         RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
-        String url = "http://behappyapp.herokuapp.com/polls/add/";
+        String url = "http://api-transnet.azurewebsites.net/api/Values/ThirdPartyPost";
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>() {

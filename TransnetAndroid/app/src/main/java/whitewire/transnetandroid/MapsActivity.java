@@ -1,9 +1,12 @@
 package whitewire.transnetandroid;
 
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Layout;
+import android.util.Base64;
 import android.util.Log;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -18,7 +21,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,6 +63,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.plus.model.people.Person;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
@@ -65,18 +71,22 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.R.attr.bitmap;
 import static android.R.attr.direction;
 import static android.R.attr.key;
 import static android.R.id.message;
 import static android.support.v7.widget.AppCompatDrawableManager.get;
 import static com.google.android.gms.location.places.ui.PlaceAutocomplete.getStatus;
 import static java.security.AccessController.getContext;
+import static whitewire.transnetandroid.R.id.fromText;
+import static whitewire.transnetandroid.R.id.toText;
 
 /**
  * An activity that displays a map showing the place at the device's current location.
@@ -121,6 +131,14 @@ public class MapsActivity extends AppCompatActivity
 
         final TextView fromText = (TextView) findViewById(R.id.fromText);
         final TextView toText = (TextView) findViewById(R.id.toText);
+        Button buyButton = (Button) findViewById(R.id.buy);
+
+        buyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                buyTicket();
+            }
+        });
 
         final PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
@@ -175,6 +193,48 @@ public class MapsActivity extends AppCompatActivity
         mapFragment.getMapAsync(this);
     }
 
+    public void buyTicket(final String email, final int cost) {
+        // Initializing request and defining URL
+        RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
+        String url = "http://api-transnet.azurewebsites.net/api/Values/PurchasePost";
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Given the request is successful, display a message
+                        Toast.makeText(getApplicationContext(), "Your ride has successfully been purchased",
+                                Toast.LENGTH_LONG).show();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // Given there is an error with the request, display it and log it
+                Toast.makeText(getApplicationContext(), "Error is: " + error.toString(),
+                        Toast.LENGTH_LONG).show();
+                //Log.e("VOLLEY", error.toString());
+            }
+        }) {
+            // Sending data to API
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> parameters = new HashMap<>();
+                parameters.put("email", email);
+                parameters.put("cost", String.valueOf(cost));
+                return parameters;
+            }
+
+            // Method to finalize request
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                //params.put("Content-Type", "application/x-www-form-urlencoded");
+                return params;
+            }
+        };
+        requestQueue.add(stringRequest);
+    }
+
     private void getDirectionsTwo(LatLng origin, LatLng destination) {// Setting up network request
         RequestQueue mRequestQueue = Volley.newRequestQueue(getApplicationContext());
 
@@ -222,39 +282,44 @@ public class MapsActivity extends AppCompatActivity
         final TextView distanceLabel = (TextView) findViewById(R.id.durationLabel);
         final TextView durationText = (TextView) findViewById(R.id.durationText);
         final TextView distanceText = (TextView) findViewById(R.id.distanceText);
+        final LinearLayout layout = (LinearLayout) findViewById(R.id.paymentLayout);
+
         String serverKey = "AIzaSyCAWJqAAO0eD4138tt9sEjV-YLoMrH4BzI";
         GoogleDirection.withServerKey(serverKey)
-                .from(origin)
-                .to(destination)
-                .execute(new DirectionCallback() {
-                    @Override
-                    public void onDirectionSuccess(Direction direction, String rawBody) {
-                        Route route = direction.getRouteList().get(0);
-                        Leg leg = route.getLegList().get(0);
+            .from(origin)
+            .to(destination)
+            .execute(new DirectionCallback() {
+                @Override
+                public void onDirectionSuccess(Direction direction, String rawBody) {
+                    Route route = direction.getRouteList().get(0);
+                    Leg leg = route.getLegList().get(0);
 //                        List<Step> stepList= leg.getStepList();
 //                        ArrayList<LatLng> pointList = leg.getDirectionPoint();
 //
 //                        String travelMode = step.getTravelMode();
 //                        ArrayList<LatLng> sectionList = leg.getSectionPoint();
-                        String distance = leg.getDistance().getText();
-                        String duration = leg.getDuration().getText();
-                        durationLabel.setVisibility(View.VISIBLE);
-                        distanceLabel.setVisibility(View.VISIBLE);
-                        durationText.setText(duration);
-                        distanceText.setText(distance);
+                    String distance = leg.getDistance().getText();
+                    String duration = leg.getDuration().getText();
+                    durationLabel.setVisibility(View.VISIBLE);
+                    distanceLabel.setVisibility(View.VISIBLE);
+                    durationText.setText(duration);
+                    distanceText.setText(distance);
 
-                        ArrayList<LatLng> directionPositionList = leg.getDirectionPoint();
-                        PolylineOptions polylineOptions = DirectionConverter.createPolyline(getApplicationContext(),
-                                directionPositionList, 5, Color.RED);
-                        mMap.addPolyline(polylineOptions);
-                    }
+                    ArrayList<LatLng> directionPositionList = leg.getDirectionPoint();
+                    PolylineOptions polylineOptions = DirectionConverter.createPolyline(getApplicationContext(),
+                            directionPositionList, 5, Color.RED);
+                    mMap.addPolyline(polylineOptions);
 
-                    @Override
-                    public void onDirectionFailure(Throwable t) {
-                        Toast.makeText(getApplicationContext(), t.toString(),
-                                Toast.LENGTH_LONG).show();
-                    }
-                });
+                    layout.setVisibility(View.VISIBLE);
+                    layout.setBackgroundColor(Color.parseColor("#ffffff"));
+                }
+
+                @Override
+                public void onDirectionFailure(Throwable t) {
+                    Toast.makeText(getApplicationContext(), t.toString(),
+                            Toast.LENGTH_LONG).show();
+                }
+            });
     }
 
     private void updateMap (String strAddress) {
