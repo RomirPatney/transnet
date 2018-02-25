@@ -1,5 +1,8 @@
 package whitewire.transnetandroid;
 
+import android.content.Intent;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -21,9 +24,12 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
+import com.google.android.gms.maps.model.LatLng;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.security.AccessController.getContext;
@@ -141,6 +147,8 @@ public class OfferRideActivity extends AppCompatActivity {
                         Integer.parseInt(toDaySpinner.getSelectedItem().toString()),
                         Integer.parseInt(toHourSpinner.getSelectedItem().toString()),
                         fromText, toText);
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(intent);
             }
         });
     }
@@ -149,50 +157,77 @@ public class OfferRideActivity extends AppCompatActivity {
                             final int toMonth, final int toDay, final int toHour,
                             final String fromWhere, final String toWhere) {
 
-        // Initializing request and defining URL
-        RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
-        String url = "http://api-transnet.azurewebsites.net/api/Values/ThirdPartyPost";
-
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        // Given the request is successful, display a message
-                        Toast.makeText(getApplicationContext(), "Thank you for submitting your entry",
-                                Toast.LENGTH_SHORT).show();
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                // Given there is an error with the request, display it and log it
-                Toast.makeText(getApplicationContext(), "Error is: " + error.toString(),
+        Geocoder gcd = new Geocoder(this);
+        try {
+            List<Address> fromAddr = gcd.getFromLocationName(fromWhere,5);
+            List<Address> toAddr = gcd.getFromLocationName(toWhere,5);
+            if (fromAddr == null || toAddr == null) {
+                Toast.makeText(getApplicationContext(), "An error occurred, please restart",
                         Toast.LENGTH_LONG).show();
-                //Log.e("VOLLEY", error.toString());
+                return;
             }
-        }) {
-            // Sending data to API
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> parameters = new HashMap<>();
-                parameters.put("fromMonth", String.valueOf(fromMonth));
-                parameters.put("fromDay", String.valueOf(fromDay));
-                parameters.put("fromHour", String.valueOf(fromHour));
-                parameters.put("toMonth", String.valueOf(toMonth));
-                parameters.put("toHour", String.valueOf(toHour));
-                parameters.put("toDay", String.valueOf(toDay));
-                parameters.put("fromWhere", fromWhere);
-                parameters.put("toWhere", toWhere);
-                return parameters;
-            }
+            Address locationFrom = fromAddr.get(0);
+            locationFrom.getLatitude();
+            locationFrom.getLongitude();
+            final LatLng locFrom = new LatLng(locationFrom.getLatitude(),locationFrom.getLongitude());
 
-            // Method to finalize request
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = new HashMap<>();
-                //params.put("Content-Type", "application/x-www-form-urlencoded");
-                return params;
-            }
-        };
-        requestQueue.add(stringRequest);
+            Address locationTo = fromAddr.get(0);
+            locationTo.getLatitude();
+            locationTo.getLongitude();
+            final LatLng locTo = new LatLng(locationTo.getLatitude(),locationTo.getLongitude());
+
+            final int mode = 1;
+
+            // Initializing request and defining URL
+            RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
+            String url = "http://api-transnet.azurewebsites.net/api/Values/ThirdPartyPost";
+
+            StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            // Given the request is successful, display a message
+                            Toast.makeText(getApplicationContext(), "Thank you for submitting your entry",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    // Given there is an error with the request, display it and log it
+                    Toast.makeText(getApplicationContext(), "Error is: " + error.toString(),
+                            Toast.LENGTH_LONG).show();
+                    //Log.e("VOLLEY", error.toString());
+                }
+            }) {
+                // Sending data to API
+                @Override
+                protected Map<String, String> getParams() {
+                    Map<String, String> parameters = new HashMap<>();
+                    parameters.put("fromMonth", String.valueOf(fromMonth));
+                    parameters.put("fromDay", String.valueOf(fromDay));
+                    parameters.put("fromHour", String.valueOf(fromHour));
+                    parameters.put("toMonth", String.valueOf(toMonth));
+                    parameters.put("toHour", String.valueOf(toHour));
+                    parameters.put("toDay", String.valueOf(toDay));
+                    parameters.put("lat1", String.valueOf(locFrom.latitude));
+                    parameters.put("lon1", String.valueOf(locFrom.longitude));
+                    parameters.put("lat2", String.valueOf(locTo.latitude));
+                    parameters.put("lon2", String.valueOf(locTo.longitude));
+                    parameters.put("mode", String.valueOf(mode));
+                    return parameters;
+                }
+
+                // Method to finalize request
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    Map<String, String> params = new HashMap<>();
+                    //params.put("Content-Type", "application/x-www-form-urlencoded");
+                    return params;
+                }
+            };
+            requestQueue.add(stringRequest);
+        } catch (IOException e) {
+            Log.e("TAG", "Exception is: " + e.toString());
+        }
     }
 }
