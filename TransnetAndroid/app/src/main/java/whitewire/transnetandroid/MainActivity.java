@@ -88,12 +88,12 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
     private String mEmail, mPassword, mCredit, mUrl = null;
 
     protected void checkPreferences() {
-        Boolean firstRun = getSharedPreferences("PREFERENCE", MODE_PRIVATE)
+        boolean firstRun = getSharedPreferences("PREFERENCES", MODE_PRIVATE)
                 .getBoolean("firstRun", true);
 
         if (!firstRun) {
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
+            Intent intent_new = new Intent(this, RideSelectionActivity.class);
+            startActivity(intent_new);
         }
     }
 
@@ -103,14 +103,14 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
         checkPreferences();
 
         setContentView(R.layout.activity_main);
-        boolean isFirstRun = getSharedPreferences("PREFERENCES", MODE_PRIVATE)
-                .getBoolean("firstRun", true);
+        // boolean isFirstRun = getSharedPreferences("PREFERENCES", MODE_PRIVATE)
+        //         .getBoolean("firstRun", true);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         SharedPreferences.Editor edit = sharedPreferences.edit();
 
         // Initialize the firstRun and imageUploaded characteristics
-        edit.putBoolean("firstRun", false).apply();
-        edit.putBoolean("imageUploaded", false).apply();
+        // edit.putBoolean("firstRun", false).apply();
+        // edit.putBoolean("imageUploaded", false).apply();
 
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
@@ -172,6 +172,10 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
         registerButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Set preferences to say the user is already logged in
+                getSharedPreferences("PREFERENCES", MODE_PRIVATE).edit()
+                        .putBoolean("firstRide", false);
+
                 // Setting up request
                 RequestQueue mRequestQueue = Volley.newRequestQueue(getApplicationContext());
 
@@ -326,7 +330,7 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<C
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);
+            // mAuthTask.execute((Void) null);
         }
 
         mEmail = email;
