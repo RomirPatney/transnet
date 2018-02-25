@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "1074721753198",
+    "firebase_url": "https://transnetandroid-ef3d2.firebaseio.com",
+    "project_id": "transnetandroid-ef3d2",
+    "storage_bucket": "transnetandroid-ef3d2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074721753198:android:6eacd22de79a2304",
+        "android_client_info": {
+          "package_name": "whitewire.transnetandroid"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1074721753198-is61ksa6nbnk7h2cah1qqps1oonedthn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "whitewire.transnetandroid",
+            "certificate_hash": "44454bd48760341768a7f49534f3b083a30aa17a"
+          }
+        },
+        {
+          "client_id": "1074721753198-8rqrc6addv92i5gdr3s1ffmq6l3ku0tb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcuAoXuKxJvP2SSKjCTfB-AVB4pCkiUP8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1074721753198-8rqrc6addv92i5gdr3s1ffmq6l3ku0tb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

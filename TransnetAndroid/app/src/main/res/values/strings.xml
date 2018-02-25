@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">TransnetAndroid</string>
+    <string name="google_maps_key">AIzaSyBQIN0AHmto-aAyHDiJJfKnhHVmfuJaEIk</string>
+    <string name="title_activity_maps">Map</string>
 </resources>
