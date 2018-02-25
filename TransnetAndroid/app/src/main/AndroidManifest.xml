@@ -37,8 +37,8 @@
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name=".RideSelectionActivity"
-            android:label="Ride Selection"
+            android:name=".RegisterActivity"
+            android:label="Registration Menu"
             android:screenOrientation="portrait"/>
 
         <activity
