@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/TransnetAndroid.iml" filepath="$PROJECT_DIR$/TransnetAndroid.iml" />
+      <module fileurl="file://D:\GitHub\Repositories\transnet\TransnetAndroid\TransnetAndroid.iml" filepath="D:\GitHub\Repositories\transnet\TransnetAndroid\TransnetAndroid.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://D:\GitHub\Repositories\transnet\TransnetAndroid\app\app.iml" filepath="D:\GitHub\Repositories\transnet\TransnetAndroid\app\app.iml" />
     </modules>
   </component>
 </project>
