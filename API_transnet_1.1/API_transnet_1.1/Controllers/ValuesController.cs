@@ -5,9 +5,8 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 
-namespace API_Transnet.Controllers
+namespace API_transnet_1._1.Controllers
 {
-    [Authorize]
     public class ValuesController : ApiController
     {
         // GET api/values
