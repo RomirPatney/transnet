@@ -16,6 +16,7 @@ using Microsoft.Owin.Security.OAuth;
 using API_Transnet.Models;
 using API_Transnet.Providers;
 using API_Transnet.Results;
+using System.ComponentModel.DataAnnotations;
 
 namespace API_Transnet.Controllers
 {
@@ -321,13 +322,10 @@ namespace API_Transnet.Controllers
         // POST api/Account/Register
         [AllowAnonymous]
         [Route("Register")]
+        [HttpPost]
         public async Task<IHttpActionResult> Register(RegisterBindingModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
+  
             var user = new ApplicationUser() { UserName = model.Email, Email = model.Email };
 
             IdentityResult result = await UserManager.CreateAsync(user, model.Password);
@@ -338,6 +336,12 @@ namespace API_Transnet.Controllers
             }
 
             return Ok();
+        }
+
+        [HttpGet]
+        public string Bullshit ()
+        {
+            return "YES";
         }
 
         // POST api/Account/RegisterExternal
